@@ -2,7 +2,7 @@
 //  UIView+Extension.swift
 //  ImitationOfTodayNews
 //
-//  Created by 杜奎 on 2017/5/24.
+//  Created by DU on 2017/5/24.
 //  Copyright © 2017年 DU. All rights reserved.
 //
 

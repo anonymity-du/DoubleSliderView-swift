@@ -9,22 +9,27 @@
 import UIKit
 
 class DoubleSliderView: UIView {
-
-    var minNum: CGFloat = 0
-    var maxNum: CGFloat = 0
-
+    //当前最小的值
     var curMinValue: CGFloat = 0
+    //当前最大的值
     var curMaxValue: CGFloat = 0
-
-    var needAnimated = false
-    var dragType: Int = 0 // 0 没有在按钮上 1 左边按钮 2 右边按钮 3两者中间
+    //是否需要动画
+    var needAnimation = false
+    //手势起手位置类型 0 未在按钮上 not on button ; 1 在左边按钮上 on left button ; 2 在右边按钮上 on right button ; 3 两者重叠 overlap
+    var dragType: Int = 0
+    //间隔大小
+    var minInterval: CGFloat = 0
+    private var minIntervalWidth: CGFloat = 0
     
+    //左侧按钮的中心位置 left btn's center
     private var minCenter: CGPoint = CGPoint.zero
+    //右侧按钮的中心位置 right btn's center
     private var maxCenter: CGPoint = CGPoint.zero
-    
-    private var marginCenterX: CGFloat = 0
-    var sliderBtnLocationChangeBlock: ((_ isLeft: Bool, _ finish: Bool)->())?
 
+    private var marginCenterX: CGFloat = 0
+    
+    //滑块位置改变后的回调 isLeft 是否是左边 finish手势是否结束
+    var sliderBtnLocationChangeBlock: ((_ isLeft: Bool, _ finish: Bool)->())?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -60,12 +65,12 @@ class DoubleSliderView: UIView {
         self.maxLineView.centerY = self.height * 0.5
         self.changeLineViewWidth()
         
-        self.addGestureRecognizer(UIPanGestureRecognizer.init(target: self, action: #selector(minSliderBtnPanAction(gesture:))))
+        self.addGestureRecognizer(UIPanGestureRecognizer.init(target: self, action: #selector(sliderBtnPanAction(gesture:))))
     }
 
-    //MARK:- action
+    //MARK:- actions
     
-    @objc func minSliderBtnPanAction(gesture: UIPanGestureRecognizer) {
+    @objc func sliderBtnPanAction(gesture: UIPanGestureRecognizer) {
         let location = gesture.location(in: self)
         let point = gesture.translation(in: self)
         switch gesture.state {
@@ -73,25 +78,25 @@ class DoubleSliderView: UIView {
             let inMinSliderBtn = self.minSliderBtn.frame.contains(location)
             let inMaxSliderBtn = self.maxSliderBtn.frame.contains(location)
             if inMinSliderBtn && !inMaxSliderBtn {
-                print("从左边开始触摸")
+                print("从左边开始触摸 start drag from left")
                 self.dragType = 1
             }else if !inMinSliderBtn && inMaxSliderBtn {
-                print("从右边开始触摸")
+                print("从右边开始触摸 start drag from right")
                 self.dragType = 2
             }else if !inMaxSliderBtn && !inMinSliderBtn {
-                print("没有触动")
+                print("没有触动到按钮 not on button")
                 self.dragType = 0
             }else {
                 let leftOffset = abs(location.x - self.minSliderBtn.centerX)
                 let rightOffset = abs(location.x - self.maxSliderBtn.centerX)
                 if  leftOffset > rightOffset {
-                    print("挨着，往右边")
+                    print("挨着，往右边 start drag from right")
                     self.dragType = 2
                 }else if leftOffset < rightOffset {
-                    print("挨着，往左边")
+                    print("挨着，往左边 start drag from left")
                     self.dragType = 1
                 }else {
-                    print("正中间")
+                    print("正中间 overlap")
                     self.dragType = 3
                 }
             }
@@ -102,6 +107,9 @@ class DoubleSliderView: UIView {
                 self.maxCenter = self.maxSliderBtn.center
                 self.bringSubviewToFront(self.maxSliderBtn)
             }
+            if self.minInterval > 0  {
+                self.minIntervalWidth = (self.width - self.marginCenterX * 2) * CGFloat(self.minInterval)
+            }
             
         case .changed:
             if self.dragType == 3 {
@@ -109,10 +117,10 @@ class DoubleSliderView: UIView {
                     self.dragType = 2
                     self.maxCenter = self.maxSliderBtn.center
                     self.bringSubviewToFront(self.maxSliderBtn)
-                    print("从中间往右")
+                    print("从中间往右 from center to right")
                 }else if point.x < 0 {
                     self.dragType = 1
-                    print("从中间往左")
+                    print("从中间往左 from center to left")
                     self.minCenter = self.minSliderBtn.center
                     self.bringSubviewToFront(self.minSliderBtn)
                 }
@@ -120,8 +128,8 @@ class DoubleSliderView: UIView {
             if dragType != 0 && dragType != 3 {
                 if self.dragType == 1 {
                     self.minSliderBtn.center = CGPoint.init(x: self.minCenter.x + point.x, y: self.minCenter.y)
-                    if self.minSliderBtn.right > self.maxSliderBtn.right {
-                        self.minSliderBtn.right = self.maxSliderBtn.right
+                    if self.minSliderBtn.right > self.maxSliderBtn.right - self.minIntervalWidth {
+                        self.minSliderBtn.right = self.maxSliderBtn.right - minIntervalWidth
                     }else {
                         if self.minSliderBtn.centerX < self.marginCenterX {
                             self.minSliderBtn.centerX = self.marginCenterX
@@ -137,8 +145,8 @@ class DoubleSliderView: UIView {
                     }
                 }else {
                     self.maxSliderBtn.center = CGPoint.init(x: self.maxCenter.x + point.x, y: self.maxCenter.y)
-                    if self.maxSliderBtn.x < self.minSliderBtn.x {
-                        self.maxSliderBtn.x = self.minSliderBtn.x
+                    if self.maxSliderBtn.x < self.minSliderBtn.x + self.minIntervalWidth {
+                        self.maxSliderBtn.x = self.minSliderBtn.x + self.minIntervalWidth
                     }else {
                         if self.maxSliderBtn.centerX < self.marginCenterX {
                             self.maxSliderBtn.centerX = self.marginCenterX
@@ -166,12 +174,14 @@ class DoubleSliderView: UIView {
                     self.sliderBtnLocationChangeBlock!(false, true)
                 }
             }
+            //重置 reset
             self.dragType = 0
         default:
             break
         }
     }
     
+    //改变值域的线宽
     private func changeLineViewWidth() {
         self.minLineView.width = self.minSliderBtn.centerX
         self.minLineView.x = 0
@@ -182,17 +192,17 @@ class DoubleSliderView: UIView {
         self.midLineView.width = self.maxSliderBtn.centerX - self.minSliderBtn.centerX
         self.midLineView.x = self.minLineView.right
     }
-    
+    //根据滑块位置改变当前最小和最大的值
     private func changeValueFromLocation() {
         let contentWidth: CGFloat = self.width - self.marginCenterX * 2
         self.curMinValue = (self.minSliderBtn.centerX - self.marginCenterX)/contentWidth
         self.curMaxValue = (self.maxSliderBtn.centerX - self.marginCenterX)/contentWidth
     }
-    
+    //根据当前最小和最大的值改变滑块位置
     func changeLocationFromValue() {
         let contentWidth: CGFloat = self.width - self.marginCenterX * 2
 
-        if needAnimated {
+        if needAnimation {
             UIView.animate(withDuration: 0.2) {
                 self.minSliderBtn.centerX = self.marginCenterX + self.curMinValue * contentWidth
                 self.maxSliderBtn.centerX = self.marginCenterX + self.curMaxValue * contentWidth

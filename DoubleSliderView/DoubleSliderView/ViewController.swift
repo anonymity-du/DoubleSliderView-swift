@@ -27,7 +27,6 @@ class ViewController: UIViewController {
         self.ageLabel.centerY = 156
         self.ageLabel.x = 52
         
-        self.ageTipsLabel.sizeToFit()
         self.ageTipsLabel.centerY = self.ageLabel.centerY
         self.ageTipsLabel.x = self.ageLabel.right + 7
   
@@ -38,7 +37,7 @@ class ViewController: UIViewController {
     }
     
     //MARK: - private func
-    
+    //根据值获取整数
     private func fetchInt(from value: CGFloat) -> CGFloat {
         var newValue: CGFloat = floor(value)
         let changeValue = value - newValue
@@ -68,7 +67,7 @@ class ViewController: UIViewController {
             self.changeSliderValue()
         }
     }
-    
+    //值取整后可能改变了原始的大小，所以需要重新改变滑块的位置
     private func changeSliderValue() {
         let finishMinValue = CGFloat(self.curMinAge - self.minAge)/CGFloat(self.maxAge - self.minAge)
         let finishMaxValue = CGFloat(self.curMaxAge - self.minAge)/CGFloat(self.maxAge - self.minAge)
@@ -79,18 +78,13 @@ class ViewController: UIViewController {
     
     private func changeAgeTipsText() {
         if self.curMinAge == self.curMaxAge {
-            if self.curMaxAge == self.maxAge {
-                self.ageTipsLabel.text = "\(self.curMinAge)~\(self.curMaxAge)+岁"
-            }else {
-                self.ageTipsLabel.text = "\(self.curMinAge)岁"
-            }
+            self.ageTipsLabel.text = "\(self.curMinAge)岁"
         }else {
-            if self.curMaxAge == self.maxAge {
-                self.ageTipsLabel.text = "\(self.curMinAge)~\(self.curMaxAge)+岁"
-            }else {
-                self.ageTipsLabel.text = "\(self.curMinAge)~\(self.curMaxAge)岁"
-            }
+            self.ageTipsLabel.text = "\(self.curMinAge)~\(self.curMaxAge)岁"
         }
+        self.ageTipsLabel.sizeToFit()
+        self.ageTipsLabel.centerY = self.ageLabel.centerY
+        self.ageTipsLabel.x = self.ageLabel.right + 7
     }
     
     //MARK:- setter & getter
@@ -99,7 +93,7 @@ class ViewController: UIViewController {
         let label = UILabel.init()
         label.textColor = UIColor.black
         label.font = UIFont.systemFont(ofSize: 15, weight: .medium)
-        label.text = "年龄"
+        label.text = "年龄 age"
         label.sizeToFit()
         return label
     }()
@@ -109,12 +103,16 @@ class ViewController: UIViewController {
         label.textColor = UIColor.black
         label.font = UIFont.systemFont(ofSize: 15, weight: .medium)
         label.text = "\(self.minAge)~\(self.maxAge)岁"
+        label.sizeToFit()
         return label
     }()
     
     private lazy var doubleSliderView: DoubleSliderView = {
         let view = DoubleSliderView.init(frame: CGRect.init(x: 0, y: 0, width: self.view.width - 52 * 2, height: 35 + 20))
-        view.needAnimated = true
+        view.needAnimation = true
+//        if self.maxAge > self.minAge {
+//            view.minInterval = 4.0/CGFloat(self.maxAge - self.minAge)
+//        }
         view.sliderBtnLocationChangeBlock = { [weak self] isLeft,finish in
             self?.sliderValueChangeAction(isLeft: isLeft, finish: finish)
         }
