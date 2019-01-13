@@ -63,6 +63,7 @@ class DoubleSliderView: UIView {
         self.minLineView.centerY = self.height * 0.5
         self.midLineView.centerY = self.height * 0.5
         self.maxLineView.centerY = self.height * 0.5
+        
         self.changeLineViewWidth()
         
         self.addGestureRecognizer(UIPanGestureRecognizer.init(target: self, action: #selector(sliderBtnPanAction(gesture:))))
@@ -75,8 +76,12 @@ class DoubleSliderView: UIView {
         let point = gesture.translation(in: self)
         switch gesture.state {
         case .began:
-            let inMinSliderBtn = self.minSliderBtn.frame.contains(location)
-            let inMaxSliderBtn = self.maxSliderBtn.frame.contains(location)
+            
+            let minSliderFrame = CGRect.init(x: self.minSliderBtn.x - 10, y: self.minSliderBtn.y - 10, width: self.minSliderBtn.width + 20, height: self.minSliderBtn.height + 20)
+            let maxSliderFrame = CGRect.init(x: self.maxSliderBtn.x - 10, y: self.maxSliderBtn.y - 10, width: self.maxSliderBtn.width + 20, height: self.maxSliderBtn.height + 20)
+            
+            let inMinSliderBtn = minSliderFrame.contains(location)
+            let inMaxSliderBtn = maxSliderFrame.contains(location)
             if inMinSliderBtn && !inMaxSliderBtn {
                 print("从左边开始触摸 start drag from left")
                 self.dragType = 1
