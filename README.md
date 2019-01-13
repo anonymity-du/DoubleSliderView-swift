@@ -3,8 +3,10 @@
 
 
 示例
+
 ![image](https://github.com/anonymity-du/DoubleSliderView-swift/blob/master/imageFolder/doubleslider_1.gif)
 
 
 增加了最小间隙
+
 ![image](https://github.com/anonymity-du/DoubleSliderView-swift/blob/master/imageFolder/doubleslider_2.gif)
