@@ -51,17 +51,13 @@ class ViewController: UIViewController {
         if isLeft {
             let age = CGFloat(self.maxAge - self.minAge) * self.doubleSliderView.curMinValue
             let tmpAge = self.fetchInt(from: age)
-            if tmpAge != age {
-                self.curMinAge = Int(tmpAge) + self.minAge
-                self.changeAgeTipsText()
-            }
+            self.curMinAge = Int(tmpAge) + self.minAge
+            self.changeAgeTipsText()
         }else {
             let age = CGFloat(self.maxAge - self.minAge) * self.doubleSliderView.curMaxValue
             let tmpAge = self.fetchInt(from: age)
-            if tmpAge != age {
-                self.curMaxAge = Int(tmpAge) + self.minAge
-                self.changeAgeTipsText()
-            }
+            self.curMaxAge = Int(tmpAge) + self.minAge
+            self.changeAgeTipsText()
         }
         if finish {
             self.changeSliderValue()
